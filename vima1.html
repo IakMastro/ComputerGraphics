@@ -18,6 +18,61 @@
     <script src="js/vima1.js" defer></script>
 
     <br>
+    <h5>Ρυθμίσεις κάμερας</h5>
+    <label>Γωνία θέασης (σε μοίρες):</label>
+    <input type="number" name="radian" id="radian" value="90">
+
+    <br>
+    <label>Απόσταση κάμερας από την αρχή των αξόνων:</label>
+    <input type="number" name="view_distance" id="view_distance" value="5">
+
+    <br>
+    <label>Θέση κάμερας:</label>
+    <div>
+        <input type="radio" name="camera_option" value="left_front_top">
+        <label for="left_front_top">Δεξία, Μπροστά και Πάνω</label>
+    </div>
+
+    <div>
+        <input type="radio" name="camera_option" value="left_front_bottom">
+        <label for="left_front_bottom">Δεξία, Μπροστά και Κάτω</label>
+    </div>
+
+    <div>
+        <input type="radio" name="camera_option" value="left_back_top">
+        <label for="left_back_top">Δεξία, Πίσω και Πάνω</label>
+    </div>
+
+    <div>
+        <input type="radio" name="camera_option" value="left_back_bottom">
+        <label for="left_back_bottom">Δεξία, Πίσω και Κάτω</label>
+    </div>
+
+    <div>
+        <input type="radio" name="camera_option" value="right_front_top">
+        <label for="right_front_top">Αριστερά, Μπροστά και Πάνω</label>
+    </div>
+
+    <div>
+        <input type="radio" name="camera_option" value="right_front_bottom">
+        <label for="right_front_bottom">Αριστερά, Μπροστά και Κάτω</label>
+    </div>
+
+    <div>
+        <input type="radio" name="camera_option" value="right_back_top">
+        <label for="right_back_top">Αριστερά, Πίσω και Πάνω</label>
+    </div>
+
+    <div>
+        <input type="radio" name="camera_option" value="right_back_bottom">
+        <label for="right_back_bottom">Αριστερά, Πίσω και Κάτω</label>
+    </div>
+
+    <br>
+    <button type="button" onclick="changeCameraPosition()">Οριστικοποίηση επιλογών</button>
+
+    <br>
+    <h5>Μενού βημάτων</h5>
     <button>Επόμενο βήμα</button>
 </body>
 

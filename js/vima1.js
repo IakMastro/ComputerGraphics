@@ -1,67 +1,118 @@
-main();
+const canvas = document.querySelector('#main_canvas');
+const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
 
-function main() {
-    const canvas = document.querySelector('#main_canvas');
-    const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
-
-    // Εάν δεν επιστρέψει το webgl module, τότε το πρόγραμμα κλείνει
-    if (!gl) {
-        alert('Unable to initialize WebGL. Your browser or machine may not support it.');
-        return;
-    }
-
-    // Vertex shader program
-    const vsSource = `
-    attribute vec4 aVertexPosition;
-    attribute vec4 aVertexColor;
-    uniform mat4 uModelViewMatrix;
-    uniform mat4 uProjectionMatrix;
-    varying lowp vec4 vColor;
-
-    void main(void) {
-      gl_Position = uProjectionMatrix * uModelViewMatrix * aVertexPosition;
-      vColor = aVertexColor;
-    }
-  `;
-
-    // Fragment shader program
-    const fsSource = `
-    varying lowp vec4 vColor;
-    void main(void) {
-      gl_FragColor = vColor;
-    }
-  `;
-
-    // Αρχικοποίηση του shader προγράμματος.
-    const shaderProgram = initShaderProgram(gl, vsSource, fsSource);
-
-    // Collect all the info needed to use the shader program.
-    // Look up which attributes our shader program is using
-    // for aVertexPosition, aVertexColor and also
-    // look up uniform locations.
-    const programInfo = {
-        program: shaderProgram,
-        attribLocations: {
-            vertexPosition: gl.getAttribLocation(shaderProgram, 'aVertexPosition'),
-            vertexColor: gl.getAttribLocation(shaderProgram, 'aVertexColor'),
-        },
-        uniformLocations: {
-            projectionMatrix: gl.getUniformLocation(shaderProgram, 'uProjectionMatrix'),
-            modelViewMatrix: gl.getUniformLocation(shaderProgram, 'uModelViewMatrix'),
-        }
-    };
-
-    // Αρχικοποίηση των buffers
-    const buffers = initBuffers(gl);
-
-    // Rendering
-    function render(cameraPosition) {
-        drawScene(gl, programInfo, buffers, cameraPosition);
-    }
-    requestAnimationFrame(render([5, 5, 5]));
+// Εάν δεν επιστρέψει το webgl module, τότε το πρόγραμμα κλείνει
+if (!gl) {
+    alert('Unable to initialize WebGL. Your browser or machine may not support it.');
 }
 
-function initBuffers(gl) {
+// Vertex shader program
+const vsSource = `
+attribute vec4 aVertexPosition;
+attribute vec4 aVertexColor;
+uniform mat4 uModelViewMatrix;
+uniform mat4 uProjectionMatrix;
+varying lowp vec4 vColor;
+void main(void) {
+  gl_Position = uProjectionMatrix * uModelViewMatrix * aVertexPosition;
+  vColor = aVertexColor;
+}
+`;
+
+// Fragment shader program
+const fsSource = `
+varying lowp vec4 vColor;
+void main(void) {
+  gl_FragColor = vColor;
+}
+`;
+
+// Αρχικοποίηση του shader προγράμματος.
+const shaderProgram = initShaderProgram();
+// Collect all the info needed to use the shader program.
+// Look up which attributes our shader program is using
+// for aVertexPosition, aVertexColor and also
+// look up uniform locations.
+const programInfo = {
+    program: shaderProgram,
+    attribLocations: {
+        vertexPosition: gl.getAttribLocation(shaderProgram, 'aVertexPosition'),
+        vertexColor: gl.getAttribLocation(shaderProgram, 'aVertexColor'),
+    },
+    uniformLocations: {
+        projectionMatrix: gl.getUniformLocation(shaderProgram, 'uProjectionMatrix'),
+        modelViewMatrix: gl.getUniformLocation(shaderProgram, 'uModelViewMatrix'),
+    }
+};
+
+// Αρχικοποίηση των buffers
+const buffers = initBuffers();
+
+main();
+
+function changeCameraPosition() {
+    const radiant = document.getElementById("radian").value;
+    const viewDistance = document.getElementById("view_distance").value;
+    const cameraOptions = document.querySelectorAll('input[name="camera_option"]');
+
+    let cameraOption;
+    for (const radioButton of cameraOptions) {
+        if (radioButton.checked) {
+            cameraOption = radioButton.value;
+            break;
+        }
+    }
+
+    let cameraPosition;
+    switch (cameraOption) {
+        case 'left_front_top':
+            cameraPosition = [-viewDistance, -viewDistance, viewDistance];
+            break;
+
+        case 'left_front_bottom':
+            cameraPosition = [-viewDistance, -viewDistance, -viewDistance];
+            break;
+
+        case 'left_back_top':
+            cameraPosition = [-viewDistance, viewDistance, viewDistance];
+            break;
+
+        case 'left_back_bottom':
+            cameraPosition = [-viewDistance, viewDistance, -viewDistance];
+            break;
+
+        case 'right_front_top':
+            cameraPosition = [viewDistance, -viewDistance, viewDistance];
+            break;
+
+        case 'right_front_bottom':
+            cameraPosition = [viewDistance, -viewDistance, -viewDistance];
+            break;
+
+        case 'right_back_top':
+            cameraPosition = [viewDistance, viewDistance, viewDistance];
+            break;
+
+        case 'right_back_bottom':
+            cameraPosition = [viewDistance, viewDistance, -viewDistance];
+            break;
+
+        default:
+            alert("Παρακαλώ, επιλέξτε μία επιλογή");
+    }
+
+    drawScene(radiant, cameraPosition);
+}
+
+function main() {
+    // Rendering
+    function render() {
+        drawScene(90, [5, 5, 5]);
+    }
+    requestAnimationFrame(render);
+}
+
+function initBuffers() {
     // Η δημιουργία και η σύνδεση των buffers των συντεταγμένων
     const positionBuffer = gl.createBuffer();
     gl.bindBuffer(gl.ARRAY_BUFFER, positionBuffer);
@@ -153,7 +204,7 @@ function initBuffers(gl) {
     };
 }
 
-function drawScene(gl, programInfo, buffers, cameraPosition) {
+function drawScene(radiant, cameraPosition) {
     gl.clearColor(0.17, 0.18, 0.2, 1.0) // Γεμίζει το background με σκούρο γκρι
     gl.clearDepth(1.0); // Καθαρίζει τα πάντα
     gl.enable(gl.DEPTH_TEST); // Ενεργοποίει το βάθος
@@ -161,7 +212,7 @@ function drawScene(gl, programInfo, buffers, cameraPosition) {
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
 
     // Δημιουργία πίνακα οπτικής της κάμερας με τα εξής χαρακτηριστίκα:
-    const fieldOfView = Math.PI / 2; // Γωνία θέασης
+    const fieldOfView = radiant * Math.PI / 180; // Γωνία θέασης
     const aspect = 1; // Αναλογία διαστάσεων
     const zNear = 0.01; // Κοντινό κατώφλι
     const zFar = 20.0; // Μακρινό κατώφλι
@@ -179,7 +230,7 @@ function drawScene(gl, programInfo, buffers, cameraPosition) {
 
     // Μετακίνηση της κάμερας στο σημείο cameraPosition βλέποντας στο σημείο (0,0,0) προς τον άξονα z
     // Την πρώτη φόρα, η τιμή του cameraPosition είναι (5,5,5)
-    glMatrix.mat4.lookAt(modelViewMatrix, cameraPosition, [0, 0, 0], [1, 0, 0]);
+    glMatrix.mat4.lookAt(modelViewMatrix, cameraPosition, [0, 0, 0], [0, 0, 1]);
 
     // Αντιστοίχιση των συντεταγμένων από τον buffer στο vertexPosition attribute
     {
@@ -241,10 +292,10 @@ function drawScene(gl, programInfo, buffers, cameraPosition) {
     }
 }
 
-function initShaderProgram(gl, vsSource, fsSource) {
+function initShaderProgram() {
     // Μεταγλώττιση των shaders
-    const vertexShader = loadShader(gl, gl.VERTEX_SHADER, vsSource);
-    const fragmentShader = loadShader(gl, gl.FRAGMENT_SHADER, fsSource);
+    const vertexShader = loadShader(gl.VERTEX_SHADER, vsSource);
+    const fragmentShader = loadShader(gl.FRAGMENT_SHADER, fsSource);
 
     // Ενσωμάτωση shaders στο πρόγραμμα
     const shaderProgram = gl.createProgram();
@@ -261,7 +312,7 @@ function initShaderProgram(gl, vsSource, fsSource) {
     return shaderProgram;
 }
 
-function loadShader(gl, type, source) {
+function loadShader(type, source) {
     const shader = gl.createShader(type);
 
     gl.shaderSource(shader, source);
