@@ -50,8 +50,8 @@ const buffers = initBuffers();
 
 main();
 
-function goToMove2() {
-    window.location = "vima2.html";
+function goToMove1() {
+    window.location = "vima1.html"
 }
 
 function changeCameraPosition() {
@@ -164,7 +164,25 @@ function initBuffers() {
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positions), gl.STATIC_DRAW);
 
     // Πίνακας που βάζει χρώματα σε κάθε όψη του κύβου. Όλα είναι αποχρώσεις του πράσινου
-    const faceColors = [
+    const faceHeadColors = [
+        [1.0, 1.0, 1.0, 1.0],
+        [1.0, 1.0, 1.0, 1.0],
+        [1.0, 1.0, 1.0, 1.0],
+        [1.0, 1.0, 1.0, 1.0],
+        [1.0, 1.0, 1.0, 1.0],
+        [1.0, 1.0, 1.0, 1.0]
+    ];
+
+    const faceFeetColors1 = [
+        [0.07, 0.41, 0.77, 1.0],
+        [0.3, 0.41, 1.0, 1.0],
+        [0.0, 0.41, 1.0, 1.0],
+        [0.1, 0.41, 1.0, 1.0],
+        [0.07, 0.3, 1.0, 1.0],
+        [0.5, 0.1, 1.0, 1.0]
+    ];
+
+    const faceFeetColors2 = [
         [0.3, 1.0, 0.0, 1.0],
         [0.0, 1.0, 0.4, 1.0],
         [0.5, 1.0, 0.2, 1.0],
@@ -173,16 +191,81 @@ function initBuffers() {
         [0.35, 1.0, 0.2, 1.0],
     ];
 
+    const faceFeetColors3 = [
+        [1.0, 0.3, 0.0, 1.0],
+        [1.0, 0.0, 0.4, 1.0],
+        [1.0, 0.5, 0.2, 1.0],
+        [1.0, 0.1, 0.1, 1.0],
+        [1.0, 0.3, 0.3, 1.0],
+        [1.0, 0.35, 0.2, 1.0]
+    ];
+
+    const faceFeetColors4 = [
+        [0.0, 0.0, 0.0, 1.0],
+        [0.0, 0.0, 0.0, 1.0],
+        [0.0, 0.0, 0.0, 1.0],
+        [0.0, 0.0, 0.0, 1.0],
+        [0.0, 0.0, 0.0, 1.0],
+        [0.0, 0.0, 0.0, 1.0]
+    ];
+
     // Μετατρόπη των χρωμάτων σε πίνακα για όλα τα σήμεια.
-    let colors = [];
-    for (let j = 0; j < faceColors.length; ++j) {
-        const c = faceColors[j];
-        colors = colors.concat(c, c, c, c);
+    let headColors = [];
+    for (let j = 0; j < faceHeadColors.length; ++j) {
+        const c = faceHeadColors[j];
+        headColors = headColors.concat(c, c, c, c);
     }
 
-    const colorBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(colors), gl.STATIC_DRAW);
+    const headColorBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, headColorBuffer);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(headColors), gl.STATIC_DRAW);
+
+    // Μετατρόπη των χρωμάτων σε πίνακα για όλα τα σήμεια.
+    let feetColors1 = [];
+    for (let j = 0; j < faceFeetColors1.length; ++j) {
+        const c = faceFeetColors1[j];
+        feetColors1 = feetColors1.concat(c, c, c, c);
+    }
+
+    let feetColors2 = [];
+    for (let j = 0; j < faceFeetColors2.length; ++j) {
+        const c = faceFeetColors2[j];
+        feetColors2 = feetColors2.concat(c, c, c, c);
+    }
+
+    let feetColors3 = [];
+    for (let j = 0; j < faceFeetColors3.length; ++j) {
+        const c = faceFeetColors3[j];
+        feetColors3 = feetColors3.concat(c, c, c, c);
+    }
+
+    let feetColors4 = [];
+    for (let j = 0; j < faceFeetColors4.length; ++j) {
+        const c = faceFeetColors4[j];
+        feetColors4 = feetColors4.concat(c, c, c, c);
+    }
+
+    const feetColorBuffers = [];
+
+    const feetColorBuffer1 = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, feetColorBuffer1);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(feetColors1), gl.STATIC_DRAW);
+    feetColorBuffers.push(feetColorBuffer1);
+
+    const feetColorBuffer2 = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, feetColorBuffer2);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(feetColors2), gl.STATIC_DRAW);
+    feetColorBuffers.push(feetColorBuffer2);
+
+    const feetColorBuffer3 = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, feetColorBuffer3);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(feetColors3), gl.STATIC_DRAW);
+    feetColorBuffers.push(feetColorBuffer3);
+
+    const feetColorBuffer4 = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, feetColorBuffer4);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(feetColors4), gl.STATIC_DRAW);
+    feetColorBuffers.push(feetColorBuffer4);
 
     // Δημιουργία indexBuffer
     const indexBuffer = gl.createBuffer();
@@ -203,14 +286,15 @@ function initBuffers() {
 
     return {
         position: positionBuffer,
-        color: colorBuffer,
-        indices: indexBuffer,
+        headColor: headColorBuffer,
+        feetColor: feetColorBuffers,
+        indices: indexBuffer
     };
 }
 
 function drawScene(radiant, viewDistance, cameraPosition) {
     gl.clearColor(0.17, 0.18, 0.2, 1.0) // Γεμίζει το background με σκούρο γκρι
-    gl.clearDepth(1.0); // Καθαρίζει τα πάντα
+    gl.clearDepth(2.0); // Καθαρίζει τα πάντα
     gl.enable(gl.DEPTH_TEST); // Ενεργοποίει το βάθος
     gl.depthFunc(gl.LEQUAL); // Τα κοντινά αντικείμενα εμποδίζουν τα μακρινά.
     gl.clear(gl.COLOR_BUFFER_BIT | gl.DEPTH_BUFFER_BIT);
@@ -236,6 +320,31 @@ function drawScene(radiant, viewDistance, cameraPosition) {
     // Την πρώτη φόρα, η τιμή του cameraPosition είναι (5,5,5)
     glMatrix.mat4.lookAt(modelViewMatrix, cameraPosition, [0, 0, 0], [0, 0, 1]);
 
+    drawTable(projectionMatrix, modelViewMatrix);
+    glMatrix.mat4.scale(modelViewMatrix, modelViewMatrix, [0.5, 0.5, 0.5]);
+    glMatrix.mat4.translate(modelViewMatrix, modelViewMatrix, [-20, 0, -20]);
+    drawTable(projectionMatrix, modelViewMatrix);
+}
+
+function drawTable(projectionMatrix, modelViewMatrix) {
+    // Σχεδιασμός δαπέδου
+    const headMatrix = glMatrix.mat4.clone(modelViewMatrix);
+    glMatrix.mat4.scale(headMatrix, headMatrix, [10, 10, 0.5]);
+    glMatrix.mat4.translate(headMatrix, headMatrix, [0, 0, 0.5]);
+    drawCube(projectionMatrix, headMatrix, buffers.headColor);
+
+    // Σχεδιασμός ποδιών
+    let count = 0;
+    for (let xPoss = -19; xPoss < 21; xPoss += 38)
+        for (let yPoss = -19; yPoss < 21; yPoss += 38) {
+            const feetMatrix = glMatrix.mat4.clone(modelViewMatrix);
+            glMatrix.mat4.scale(feetMatrix, feetMatrix, [0.5, 0.5, 10]);
+            glMatrix.mat4.translate(feetMatrix, feetMatrix, [xPoss, yPoss, -1.02]);
+            drawCube(projectionMatrix, feetMatrix, buffers.feetColor[count++]);
+        }
+}
+
+function drawCube(projectionMatrix, modelViewMatrix, colorBuffer) {
     // Αντιστοίχιση των συντεταγμένων από τον buffer στο vertexPosition attribute
     {
         const numComponents = 3;
@@ -262,7 +371,7 @@ function drawScene(radiant, viewDistance, cameraPosition) {
         const normalize = false;
         const stride = 0;
         const offset = 0;
-        gl.bindBuffer(gl.ARRAY_BUFFER, buffers.color);
+        gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
         gl.vertexAttribPointer(
             programInfo.attribLocations.vertexColor,
             numComponents,
