@@ -1,6 +1,9 @@
 const canvas = document.querySelector('#main_canvas');
 const gl = canvas.getContext('webgl') || canvas.getContext('experimental-webgl');
 
+let cameraRotation = 0.0;
+let rotate = false;
+
 // Εάν δεν επιστρέψει το webgl module, τότε το πρόγραμμα κλείνει
 if (!gl) {
     alert('Unable to initialize WebGL. Your browser or machine may not support it.');
@@ -9,21 +12,22 @@ if (!gl) {
 // Vertex shader program
 const vsSource = `
 attribute vec4 aVertexPosition;
-attribute vec4 aVertexColor;
+attribute vec2 aTextureCoord;
 uniform mat4 uModelViewMatrix;
 uniform mat4 uProjectionMatrix;
-varying lowp vec4 vColor;
+varying highp vec2 vTextureCoord;
 void main(void) {
   gl_Position = uProjectionMatrix * uModelViewMatrix * aVertexPosition;
-  vColor = aVertexColor;
+  vTextureCoord = aTextureCoord;
 }
 `;
 
 // Fragment shader program
 const fsSource = `
-varying lowp vec4 vColor;
+varying highp vec2 vTextureCoord;
+uniform sampler2D uSample;
 void main(void) {
-  gl_FragColor = vColor;
+  gl_FragColor = texture2D(uSample, vTextureCoord);
 }
 `;
 
@@ -37,85 +41,45 @@ const programInfo = {
     program: shaderProgram,
     attribLocations: {
         vertexPosition: gl.getAttribLocation(shaderProgram, 'aVertexPosition'),
-        vertexColor: gl.getAttribLocation(shaderProgram, 'aVertexColor'),
+        textureCoord: gl.getAttribLocation(shaderProgram, 'aTextureCoord'),
     },
     uniformLocations: {
         projectionMatrix: gl.getUniformLocation(shaderProgram, 'uProjectionMatrix'),
         modelViewMatrix: gl.getUniformLocation(shaderProgram, 'uModelViewMatrix'),
+        uSample: gl.getUniformLocation(shaderProgram, 'uSample'),
     }
 };
 
 // Αρχικοποίηση των buffers
 const buffers = initBuffers();
 
+let woodTexture = loadTexture("../img/wood.png");
+let fabricTexture = loadTexture("../img/fabric.png");
+
 main();
 
-function goToMove1() {
-    window.location = "vima1.html"
+function start() {
+    rotate = true;
 }
 
-function goToMove3() {
-    window.location = "vima3.html"
+function stop() {
+    rotate = false;
+    console.log("ΚΑΝΕ ΑΚΡΗ ΡΕΕΕΕ");
 }
 
-function changeCameraPosition() {
-    const radiant = document.getElementById("radian").value;
-    const viewDistance = document.getElementById("view_distance").value;
-    const cameraOptions = document.querySelectorAll('input[name="camera_option"]');
+function goToMove2() {
+    window.location = "vima2.html";
+}
 
-    let cameraOption;
-    for (const radioButton of cameraOptions) {
-        if (radioButton.checked) {
-            cameraOption = radioButton.value;
-            break;
-        }
-    }
-
-    let cameraPosition;
-    switch (cameraOption) {
-        case 'left_front_top':
-            cameraPosition = [-viewDistance, -viewDistance, viewDistance];
-            break;
-
-        case 'left_front_bottom':
-            cameraPosition = [-viewDistance, -viewDistance, -viewDistance];
-            break;
-
-        case 'left_back_top':
-            cameraPosition = [-viewDistance, viewDistance, viewDistance];
-            break;
-
-        case 'left_back_bottom':
-            cameraPosition = [-viewDistance, viewDistance, -viewDistance];
-            break;
-
-        case 'right_front_top':
-            cameraPosition = [viewDistance, -viewDistance, viewDistance];
-            break;
-
-        case 'right_front_bottom':
-            cameraPosition = [viewDistance, -viewDistance, -viewDistance];
-            break;
-
-        case 'right_back_top':
-            cameraPosition = [viewDistance, viewDistance, viewDistance];
-            break;
-
-        case 'right_back_bottom':
-            cameraPosition = [viewDistance, viewDistance, -viewDistance];
-            break;
-
-        default:
-            alert("Παρακαλώ, επιλέξτε μία επιλογή");
-    }
-
-    drawScene(radiant, viewDistance, cameraPosition);
+function goToMove4() {
+    window.location = "vima4.html";
 }
 
 function main() {
     // Rendering
     function render() {
         drawScene(60, 25, [25, 25, 25]);
+        requestAnimationFrame(render);
     }
     requestAnimationFrame(render);
 }
@@ -167,115 +131,43 @@ function initBuffers() {
     // Μετασχηματισμός των συντεταγμένων σε πίνακα που αποτελείται από 32 bit Float αριθμών
     gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(positions), gl.STATIC_DRAW);
 
-    // Πίνακας που βάζει χρώματα σε κάθε όψη του κύβου. Όλα είναι αποχρώσεις του πράσινου
-    // White
-    const faceHeadColors = [
-        [0.91, 0.91, 0.91, 1.0],
-        [1.00, 1.00, 1.00, 1.0],
-        [0.78, 0.78, 0.87, 1.0],
-        [0.72, 0.72, 0.87, 1.0],
-        [0.66, 0.66, 0.78, 1.0],
-        [0.62, 0.60, 0.60, 1.0]
+    const textureCoordBuffer = gl.createBuffer();
+    gl.bindBuffer(gl.ARRAY_BUFFER, textureCoordBuffer);
+
+    const textureCoordinates = [
+        // Front
+        0.0,  0.0,
+        1.0,  0.0,
+        1.0,  1.0,
+        0.0,  1.0,
+        // Back
+        0.0,  0.0,
+        1.0,  0.0,
+        1.0,  1.0,
+        0.0,  1.0,
+        // Top
+        0.0,  0.0,
+        1.0,  0.0,
+        1.0,  1.0,
+        0.0,  1.0,
+        // Bottom
+        0.0,  0.0,
+        1.0,  0.0,
+        1.0,  1.0,
+        0.0,  1.0,
+        // Right
+        0.0,  0.0,
+        1.0,  0.0,
+        1.0,  1.0,
+        0.0,  1.0,
+        // Left
+        0.0,  0.0,
+        1.0,  0.0,
+        1.0,  1.0,
+        0.0,  1.0,
     ];
 
-    // Red
-    const faceFeetColors1 = [
-        [0.88, 0.11, 0.16, 1.0],
-        [0.69, 0.22, 0.23, 1.0],
-        [0.78, 0.21, 0.13, 1.0],
-        [0.69, 0.11, 0.16, 1.0],
-        [0.55, 0.11, 0.16, 1.0],
-        [0.54, 0.01, 0.01, 1.0]
-    ];
-
-    // Yellow
-    const faceFeetColors2 = [
-        [1.00, 1.00, 0.00, 1.0],
-        [1.00, 1.00, 0.31, 1.0],
-        [1.00, 0.91, 0.31, 1.0],
-        [1.00, 0.81, 0.31, 1.0],
-        [0.83, 0.60, 0.01, 1.0],
-        [0.91, 0.76, 0.44, 1.0],
-    ];
-
-    // Green
-    const faceFeetColors3 = [
-        [0.14, 0.83, 0.09, 1.0],
-        [0.13, 0.76, 0.43, 1.0],
-        [0.13, 0.66, 0.43, 1.0],
-        [0.01, 0.66, 0.25, 1.0],
-        [0.00, 0.59, 0.00, 1.0],
-        [0.33, 0.81, 0.43, 1.0],
-    ];
-
-
-    // Blue
-    const faceFeetColors4 = [
-        [0.05, 0.31, 0.96, 1.0],
-        [0.04, 0.54, 0.96, 1.0],
-        [0.04, 0.43, 0.79, 1.0],
-        [0.01, 0.27, 0.74, 1.0],
-        [0.28, 0.36, 0.75, 1.0],
-        [0.01, 0.21, 0.62, 1.0]
-    ];
-
-    // Μετατρόπη των χρωμάτων σε πίνακα για όλα τα σήμεια.
-    let headColors = [];
-    for (let j = 0; j < faceHeadColors.length; ++j) {
-        const c = faceHeadColors[j];
-        headColors = headColors.concat(c, c, c, c);
-    }
-
-    const headColorBuffer = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, headColorBuffer);
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(headColors), gl.STATIC_DRAW);
-
-    // Μετατρόπη των χρωμάτων σε πίνακα για όλα τα σήμεια.
-    let feetColors1 = [];
-    for (let j = 0; j < faceFeetColors1.length; ++j) {
-        const c = faceFeetColors1[j];
-        feetColors1 = feetColors1.concat(c, c, c, c);
-    }
-
-    let feetColors2 = [];
-    for (let j = 0; j < faceFeetColors2.length; ++j) {
-        const c = faceFeetColors2[j];
-        feetColors2 = feetColors2.concat(c, c, c, c);
-    }
-
-    let feetColors3 = [];
-    for (let j = 0; j < faceFeetColors3.length; ++j) {
-        const c = faceFeetColors3[j];
-        feetColors3 = feetColors3.concat(c, c, c, c);
-    }
-
-    let feetColors4 = [];
-    for (let j = 0; j < faceFeetColors4.length; ++j) {
-        const c = faceFeetColors4[j];
-        feetColors4 = feetColors4.concat(c, c, c, c);
-    }
-
-    const feetColorBuffers = [];
-
-    const feetColorBuffer1 = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, feetColorBuffer1);
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(feetColors1), gl.STATIC_DRAW);
-    feetColorBuffers.push(feetColorBuffer1);
-
-    const feetColorBuffer2 = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, feetColorBuffer2);
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(feetColors2), gl.STATIC_DRAW);
-    feetColorBuffers.push(feetColorBuffer2);
-
-    const feetColorBuffer3 = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, feetColorBuffer3);
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(feetColors3), gl.STATIC_DRAW);
-    feetColorBuffers.push(feetColorBuffer3);
-
-    const feetColorBuffer4 = gl.createBuffer();
-    gl.bindBuffer(gl.ARRAY_BUFFER, feetColorBuffer4);
-    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(feetColors4), gl.STATIC_DRAW);
-    feetColorBuffers.push(feetColorBuffer4);
+    gl.bufferData(gl.ARRAY_BUFFER, new Float32Array(textureCoordinates), gl.STATIC_DRAW);
 
     // Δημιουργία indexBuffer
     const indexBuffer = gl.createBuffer();
@@ -296,10 +188,50 @@ function initBuffers() {
 
     return {
         position: positionBuffer,
-        headColor: headColorBuffer,
-        feetColor: feetColorBuffers,
+        textureCoord: textureCoordBuffer,
         indices: indexBuffer
     };
+}
+
+function loadTexture(url) {
+    const texture = gl.createTexture();
+    gl.bindTexture(gl.TEXTURE_2D, texture);
+
+    const level = 0;
+    const internalFormat = gl.RGBA;
+    const width = 1;
+    const height = 1;
+    const border = 0;
+    const srcFormat = gl.RGBA;
+    const srcType = gl.UNSIGNED_BYTE;
+    const pixel = new Uint8Array([0, 0, 255, 255]);
+    gl.texImage2D(gl.TEXTURE_2D, level, internalFormat,
+        width, height, border, srcFormat, srcType,
+        pixel);
+
+    const image = new Image();
+    image.onload = function() {
+        gl.bindTexture(gl.TEXTURE_2D, texture);
+        gl.texImage2D(
+            gl.TEXTURE_2D, level, internalFormat,
+            srcFormat, srcType, image
+        );
+
+        if (isPowerOf2(image.width) && isPowerOf2(image.height)) {
+            gl.generateMipmap(gl.TEXTURE_2D);
+        } else {
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, gl.CLAMP_TO_EDGE);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, gl.CLAMP_TO_EDGE);
+            gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.LINEAR);
+        }
+    };
+    image.src = url;
+
+    return texture;
+}
+
+function isPowerOf2(value) {
+    return (value & (value - 1)) == 0;
 }
 
 function drawScene(radiant, viewDistance, cameraPosition) {
@@ -329,39 +261,43 @@ function drawScene(radiant, viewDistance, cameraPosition) {
     // Μετακίνηση της κάμερας στο σημείο cameraPosition βλέποντας στο σημείο (0,0,0) προς τον άξονα z
     // Την πρώτη φόρα, η τιμή του cameraPosition είναι (5,5,5)
     glMatrix.mat4.lookAt(modelViewMatrix, cameraPosition, [0, 0, 0], [0, 0, 1]);
+    glMatrix.mat4.rotate(modelViewMatrix, modelViewMatrix, cameraRotation, [0, 0, 1]);
 
-    drawTable(projectionMatrix, modelViewMatrix);
+    if (rotate) {
+        cameraRotation += 0.001;
+    }
+
+    drawTable(projectionMatrix, modelViewMatrix, woodTexture, gl.TEXTURE0);
 
     const chairMatrix = glMatrix.mat4.clone(modelViewMatrix);
     glMatrix.mat4.scale(chairMatrix, chairMatrix, [0.5, 0.5, 0.5]);
     glMatrix.mat4.translate(chairMatrix, chairMatrix, [-19.5, 0, -20]);
-    drawTable(projectionMatrix, chairMatrix);
+    drawTable(projectionMatrix, chairMatrix, fabricTexture, gl.TEXTURE0);
 
     const chairBack = glMatrix.mat4.clone(modelViewMatrix);
     glMatrix.mat4.scale(chairBack, chairBack, [0.25, 5, 5]);
     glMatrix.mat4.translate(chairBack, chairBack, [-60, 0, -1]);
-    drawCube(projectionMatrix, chairBack, buffers.feetColor[2]);
+    drawCube(projectionMatrix, chairBack, fabricTexture, gl.TEXTURE1);
 }
 
-function drawTable(projectionMatrix, modelViewMatrix) {
+function drawTable(projectionMatrix, modelViewMatrix, texture, index) {
     // Σχεδιασμός δαπέδου
     const headMatrix = glMatrix.mat4.clone(modelViewMatrix);
     glMatrix.mat4.scale(headMatrix, headMatrix, [10, 10, 0.5]);
     glMatrix.mat4.translate(headMatrix, headMatrix, [0, 0, 0.5]);
-    drawCube(projectionMatrix, headMatrix, buffers.headColor);
-
+    drawCube(projectionMatrix, headMatrix, texture, index);
+    
     // Σχεδιασμός ποδιών
-    let count = 0;
     for (let xPoss = -19; xPoss < 21; xPoss += 38)
         for (let yPoss = -19; yPoss < 21; yPoss += 38) {
             const feetMatrix = glMatrix.mat4.clone(modelViewMatrix);
             glMatrix.mat4.scale(feetMatrix, feetMatrix, [0.5, 0.5, 10]);
             glMatrix.mat4.translate(feetMatrix, feetMatrix, [xPoss, yPoss, -1.02]);
-            drawCube(projectionMatrix, feetMatrix, buffers.feetColor[count++]);
+            drawCube(projectionMatrix, feetMatrix, texture, index);
         }
 }
 
-function drawCube(projectionMatrix, modelViewMatrix, colorBuffer) {
+function drawCube(projectionMatrix, modelViewMatrix, texture, index) {
     // Αντιστοίχιση των συντεταγμένων από τον buffer στο vertexPosition attribute
     {
         const numComponents = 3;
@@ -383,21 +319,21 @@ function drawCube(projectionMatrix, modelViewMatrix, colorBuffer) {
 
     // Αντιστοίχηση χρωμάτων από τον buffer στο vertexColor attribute
     {
-        const numComponents = 4;
+        const numComponents = 2;
         const type = gl.FLOAT;
         const normalize = false;
         const stride = 0;
         const offset = 0;
-        gl.bindBuffer(gl.ARRAY_BUFFER, colorBuffer);
+        gl.bindBuffer(gl.ARRAY_BUFFER, buffers.textureCoord);
         gl.vertexAttribPointer(
-            programInfo.attribLocations.vertexColor,
+            programInfo.attribLocations.textureCoord,
             numComponents,
             type,
             normalize,
             stride,
             offset);
         gl.enableVertexAttribArray(
-            programInfo.attribLocations.vertexColor);
+            programInfo.attribLocations.textureCoord);
     }
 
     // Αντιστοιχηση γραμμών με σημείων
@@ -413,6 +349,10 @@ function drawCube(projectionMatrix, modelViewMatrix, colorBuffer) {
         programInfo.uniformLocations.modelViewMatrix,
         false,
         modelViewMatrix);
+
+    gl.activeTexture(index);
+    gl.bindTexture(gl.TEXTURE_2D, texture);
+    gl.uniform1i(programInfo.uniformLocations.uSample, 0);
 
     {
         const vertexCount = 36;
