@@ -1,0 +1,97 @@
+= Γραφικά Υπολογιστών
+:toc: auto
+:toc-title:
+:source-highlighter: rouge
+:source-language: js
+
+.ΕΡΓΑΣΤΗΡΙΟ: Αναφορά εργασίας
+[NOTE]
+********************************
+[.text-center]
+Αυτή είναι η αναφορά της εργασίας των φοιτητών: +
+Μαστρογιαννόπουλος Ιάκωβος: 713242017102 + 
+Αρκούλης Παναγιώτης: 18390172
+********************************
+
+== Βήμα 1
+
+Για το πρώτο βήμα της εργασίας χρησιμοποιήθηκε το official documentation για την κατανόηση του προβλήματος και συγκεκριμένα το έξης https://developer.mozilla.org/en-US/docs/Web/API/WebGL_API/Tutorial/Creating_3D_objects_using_WebGL[παράδειγμα δημιουργίας κύβου]. Για τα ερωτήματα 1 και 2, ο κώδικας τροποποιήθηκε κατάλληλα για να ικανοποίηση τα ζητούμενα, ενώ για τα ερωτήματα 3 και 4 χρησιμοποιήθηκαν οι δυνατότητες της javascript για την ανάκτηση και την χρήση των νέων τιμών. Εάν δεν υπήρχε περιορισμός στις βιβλιοθήκες, θα μπορούσε να υπάρξει χρήση της βιβλιοθήκης jquery για να κάνει πιο απλό αυτό το ερώτημα.
+
+== Βήμα 2
+
+Για το δεύτερο βήμα της εργασίας της δημιουργίας του τραπεζιού και της καρεκλάς, χρησιμοποιήθηκαν οι θεωρητικές γνώσεις του αντικείμενου. Καταρχάς, ο κύβος έπρεπε να τροποποίηθει κατάλληλα με βάση τα ζητούμενα. Φτιάχτηκε μία συνάρτηση που δημιουργεί ένα τράπεζι με όνομα: **drawTable**. Ο κώδικας της συνάρτησης αυτής είναι ο εξής:
+
+[source]
+--
+function drawTable(projectionMatrix, modelViewMatrix) {
+    // Σχεδιασμός δαπέδου
+    const headMatrix = glMatrix.mat4.clone(modelViewMatrix);
+    glMatrix.mat4.scale(headMatrix, headMatrix, [10, 10, 0.5]);
+    glMatrix.mat4.translate(headMatrix, headMatrix, [0, 0, 0.5]);
+    drawCube(projectionMatrix, headMatrix, buffers.headColor);
+
+    // Σχεδιασμός ποδιών
+    let count = 0;
+    for (let xPoss = -19; xPoss < 21; xPoss += 38)
+        for (let yPoss = -19; yPoss < 21; yPoss += 38) {
+            const feetMatrix = glMatrix.mat4.clone(modelViewMatrix);
+            glMatrix.mat4.scale(feetMatrix, feetMatrix, [0.5, 0.5, 10]);
+            glMatrix.mat4.translate(feetMatrix, feetMatrix, [xPoss, yPoss, -1.02]);
+            drawCube(projectionMatrix, feetMatrix, buffers.feetColor[count++]);
+        }
+}
+--
+
+Η συγκεκριμένη συνάρτηση δέχεται ως ορίσματα το projectionMatrix της κάμερας και το modelViewMatrix του αντικειμένου. Το headMatrix και το feetMatrix δεν είναι τίποτα αλλό παρά δύο αντίγραφα του modelViewMatrix, τα οποία τροποποίουνται κατάλληλα με την χρήση μετασχηματισμών για την δημιουργία του δαπέδου και των ποδιών. +
+Για τον σχεδιασμό τον τελίκο σχεδίασμο του τραπεζιού, του σκαμνιού και της πλάτης της καρέκλας γίνεται με τον εξής τρόπο:
+
+[source]
+--
+// Σχεδιασμός τραπεζιού
+drawTable(projectionMatrix, modelViewMatrix);
+
+// Σχεδιασμός σκαμνιού
+const chairMatrix = glMatrix.mat4.clone(modelViewMatrix);
+glMatrix.mat4.scale(chairMatrix, chairMatrix, [0.5, 0.5, 0.5]);
+glMatrix.mat4.translate(chairMatrix, chairMatrix, [-19.5, 0, -20]);
+drawTable(projectionMatrix, chairMatrix);
+
+// Σχεδιασμός πλάτης καρέκλας
+const chairBack = glMatrix.mat4.clone(modelViewMatrix);
+glMatrix.mat4.scale(chairBack, chairBack, [0.25, 5, 5]);
+glMatrix.mat4.translate(chairBack, chairBack, [-60, 0, -1]);
+drawCube(projectionMatrix, chairBack, buffers.feetColor[2]);
+--
+
+Αυτό που γίνεται είναι το εξής: αντί να σταλθεί το αρχικό modelViewMatrix για το σκαμνί, στέλνεται ένα αντίγραφο του το οποίο έχει μετασχηματιστεί κατάλληλα για να ταιριάζει στην περιγραφή που ζητήθηκε. Η πλάτη παρομοίως είναι τροποποιήμενη κατάλληλα με την διαφορά ότι απλώς σχεδιάζεται ένας κύβος.
+
+== Βήμα 3
+
+Οπώς και στο πρώτο βήμα, ετσί και εδώ, η κατανοήση του προβλήματος έγινε από το official documentation και συγκεκριμένα από το https://developer.mozilla.org/en-US/docs/Web/API/WebGL_API/Tutorial/Using_textures_in_WebGL[εξής παράδειγμα]. Το πρόβλημα ήταν ότι στα περισσότερα παραδείγματα που βρέθηκαν υπήρχε μόνο ένα αντικείμενο κάθε φόρα. Για να λυθεί το πρόβλημα αυτό, έπρεπε να γίνουν δύο προσθέσει στα ορίσματα της συνάρτησης **drawTable**, το ένα για το texture που πρέπει να έχει το αντικείμενο και το index του, που αντιστοιχούσε στον πίνακα **gl.TEXTURE0+index**, το οποίο είναι ένα enum που αντιστοιχίζει έναν αριθμό με ένα index των textures τα οποία φορτώνουν. Δηλαδή:
+
+[source]
+--
+drawTable(projectionMatrix, modelViewMatrix, woodTexture, gl.TEXTURE0);
+--
+
+== Βήμα 4
+
+Στο βήμα 4, ζητήθηκε να υπάρξει μία αλληλεπίδραση με το ποντικί του χρήστη. Για άλλη μια φόρα χρησιμοποίηθηκαν δύο λειτουργίες της Javascript για να πραγματοποίηθει. Αυτό γίνεται με τους **actionListeners**. +
+Υπήρχε το έξης πρόβλημα, το οποίο λύθηκε ότι σε περίπτωση που το screen του χρήστη είναι πολύ μικρό, θα γίνεται αυτόματα scroll down. Οι εντολές που αποτρέπουν να γίνεται αυτό είναι το εξής:
+
+[source]
+--
+document.addEventListener("wheel", function(event) {
+    if (event.pageY <= canvas.height && event.pageX <= canvas.width) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        ...
+    }
+}, {passive: false});
+--
+
+Αλλό ένα πρόβλημα, το οποίο υπήρχε και ήταν παράξενο, ήταν με την βάση της καρέκλας. Για οποιονδήποτε λόγω, στο τρίτο στάδιο του animation, όποτε γίνοταν rotate, δεν γίνοταν σώστα και μετατρεπόταν σε ένα περίεργο πολύγωνο. Δυστύχως, δεν βρέθηκε λύση σε αυτό το πρόβλημα το οποίο το λύνει, αλλά απλώς γίνεται διαφορετικά scale ετσί ώστε να μην γίνεται αυτό, το οποίο δεν είναι σωστό, αλλά δουλεύει.
+
+== Γενικοί προβληματισμοί και παρατηρήσεις για την WebGL
+
+Έχοντας δούλεψει σχεδιαστικά προγράμματα με το χερί όπως το Blender και το Unity Editor και έχοντας ψάξει για διάφορα εναλλακτικά frameworks της Javascript όπως η three.js και η babylon.js, αυτό που παρατηρήθηκε είναι ότι στην WebGL όλα γίνονται με το χερί. Για παράδειγμα, η δημιουργία του κύβου στην three.js είναι πολύ πιο απλή συγκριτικά με την δημιουργία του κύβου στην WebGL και αρχικά υπήρξε μεγάλη δυσκολία στην κατανόηση του πρώτου βήματος. Παρόλα αυτά, με την γνώση της WebGL, υπάρχει μεγαλύτερη κατανόηση τώρα στο πως δουλεύει η three.js και το blender και στο τι κρύβεται από πίσω τους, ένω άμα το project ήταν στην three.js, δεν θα υπήρχε η ίδια κατανόηση του αντικείμενου.

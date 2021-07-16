@@ -73,7 +73,7 @@ document.addEventListener("wheel", function(event) {
         event.preventDefault();
         event.stopImmediatePropagation();
 
-        if (event.deltaY === -57 && prevDirection !== "up") {
+        if (event.deltaY > 0 && prevDirection !== "up") {
             prevDirection = wheelDirection;
             wheelDirection = "up";
 
@@ -81,10 +81,10 @@ document.addEventListener("wheel", function(event) {
                 level++;
             }
 
-            if (numbersFallenDown < 3 && level === 2) {
+            if (numbersFallenDown < 4 && level === 2) {
                 numbersFallenDown++;
             }
-        } else if (event.deltaY === 57 && prevDirection !== "down") {
+        } else if (event.deltaY < 0 && prevDirection !== "down") {
             prevDirection = wheelDirection;
             wheelDirection = "down";
             if (level >= 0) {
@@ -338,7 +338,7 @@ function drawScene(radiant, viewDistance, cameraPosition) {
         direction = "";
     }
 
-    if (mouseDown && direction === "up") {
+    if (mouseDown && direction === "top") {
         cameraRotation[1] += 0.1;
         direction = "";
     } else if (mouseDown && direction === "down") {
@@ -355,11 +355,14 @@ function drawScene(radiant, viewDistance, cameraPosition) {
         drawTable(projectionMatrix, chairMatrix, fabricTexture, gl.TEXTURE0);
 
         const chairBack = glMatrix.mat4.clone(modelViewMatrix);
-        glMatrix.mat4.scale(chairBack, chairBack, [0.25, 5, 5]);
-        glMatrix.mat4.translate(chairBack, chairBack, [-60, 0, -1]);
-
-        if (numbersFallenDown > 2) {
-            glMatrix.mat4.rotate(chairBack, chairBack, 180, [0, 1, 0]);
+        if (numbersFallenDown > 3) {
+            glMatrix.mat4.scale(chairBack, chairBack, [5, 5, 0.25]);
+            glMatrix.mat4.translate(chairBack, chairBack, [-3, 0, -75]);
+            glMatrix.mat4.rotate(chairBack, chairBack, 180, [0, 0, 1]);
+            glMatrix.mat4.translate(chairBack, chairBack, [1, -3, 0]);
+        } else {
+            glMatrix.mat4.scale(chairBack, chairBack, [0.25, 5, 5]);
+            glMatrix.mat4.translate(chairBack, chairBack, [-60, 0, -1]);
         }
 
         drawCube(projectionMatrix, chairBack, fabricTexture, gl.TEXTURE1);
@@ -373,13 +376,15 @@ function drawScene(radiant, viewDistance, cameraPosition) {
         drawTable(projectionMatrix, chairMatrix, fabricTexture, gl.TEXTURE0);
 
         const chairBack = glMatrix.mat4.clone(modelViewMatrix);
-        glMatrix.mat4.scale(chairBack, chairBack, [0.25, 5, 5]);
-        glMatrix.mat4.translate(chairBack, chairBack, [-60, 0, -1]);
-        if (numbersFallenDown > 2)
-            glMatrix.mat4.rotate(chairBack, chairBack, 180, [0, 1, 0]);
-        
-        else
-            glMatrix.mat4.rotate(chairBack, chairBack, 50, [0, 1, 0]);
+        if (numbersFallenDown > 3){
+            glMatrix.mat4.scale(chairBack, chairBack, [5, 5, 0.25]);
+            glMatrix.mat4.translate(chairBack, chairBack, [-3, 0, -75]);
+            glMatrix.mat4.rotate(chairBack, chairBack, 180, [0, 0, 1]);
+            glMatrix.mat4.translate(chairBack, chairBack, [1, -3, 0]);
+        } else {
+            glMatrix.mat4.scale(chairBack, chairBack, [0.25, 5, 5]);
+            glMatrix.mat4.translate(chairBack, chairBack, [-60, 0, -1]);
+        }
         drawCube(projectionMatrix, chairBack, fabricTexture, gl.TEXTURE1);
     }
 
@@ -391,9 +396,13 @@ function drawScene(radiant, viewDistance, cameraPosition) {
         drawTable(projectionMatrix, chairMatrix, fabricTexture, gl.TEXTURE0);
 
         const chairBack = glMatrix.mat4.clone(modelViewMatrix);
-        glMatrix.mat4.scale(chairBack, chairBack, [0.25, 5, 5]);
-        glMatrix.mat4.translate(chairBack, chairBack, [-60, 0, -2]);
-        glMatrix.mat4.rotate(chairBack, chairBack, 90, [0, 1, 0]);
+        glMatrix.mat4.scale(chairBack, chairBack, [5, 5, 0.25]);
+        glMatrix.mat4.translate(chairBack, chairBack, [-3, 0, -75]);
+
+        if (numbersFallenDown > 3){
+            glMatrix.mat4.rotate(chairBack, chairBack, 180, [0, 0, 1]);
+            glMatrix.mat4.translate(chairBack, chairBack, [1, -3, 0]);
+        }
         drawCube(projectionMatrix, chairBack, fabricTexture, gl.TEXTURE1);
     }
 
